@@ -17,8 +17,10 @@ Expand-Archive `
   -Force
 ```
 
-## Worker Administration Scripts
-The repository contains scripts to administer a Buildbot Worker.
+## Worker Host Administration Scripts
+The root of the repository contains scripts to administer the Windows host
+running a Buildbot Worker. All scripts act on the Windows host directly and are
+not used by the running container.
 
 #### Clear-DockerStorage.ps1
 > Clears docker storage removing all images, containers and volumes
@@ -39,3 +41,22 @@ completely clear storage used by the Buildbot images.
 ```powershell
 ./Clear-DockerStorage.ps1
 ```
+
+## Worker Container Administration Scripts
+The [Scripts](Scripts) directory contains scripts that can be run within the
+Buildbot container at startup. The
+[`webkitdev:buildbot-worker` image](https://github.com/WebKitForWindows/docker-webkit-dev/tree/main/buildbot-worker)
+looks for `.ps1` scripts within `C:/Scripts` and runs them before starting the
+Buildbot worker. This allows injection of environment specific configuration
+into the Buildbot worker through a Docker volume.
+
+#### Invoke-WebRequests.ps1
+> Setup certificates by requesting URLs used in the build process
+
+The WebKit build process stores artifacts in Amazon's S3. Requesting the root
+AWS URL populates the certificates preventing an error within Python code
+interacting with S3.
+
+> [!NOTE]
+> This error is only seen running on Windows Server hosts so it is not included
+> in `webkitdev/buildbot-worker`.
